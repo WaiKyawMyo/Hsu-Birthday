@@ -4,182 +4,157 @@ document.addEventListener("DOMContentLoaded", () => {
   const envelopeContainer = document.getElementById("envelopeContainer");
   const unfoldButton = document.getElementById("unfoldButton");
   const finalGreetingElement = document.getElementById("finalGreeting");
-  backgroundMusic.volume = 0.4;
-  const steps = {
-    step1: document.getElementById("step1"),
-    step2: document.getElementById("step2"),
-    step3: document.getElementById("step3"),
-    step4: document.getElementById("step4"),
-  };
 
-  const recipientName = "Hsu Win Nandar"; // Customizable Name
-  const messageGreeting = "Happy 22nd Birthday,"; // Customizable Greeting
+  const messageGreeting = "Happy 22nd Birthday,";
+  const images = ["img1.jpg", "img2.jpg", "img3.jpg", "img4.jpg"]; // Ensure these files exist
 
-  // --- Utility Function to Transition Steps ---
   function transitionToStep(targetStepId) {
-    const currentActive = document.querySelector(".step.active");
-    if (currentActive) {
-      currentActive.classList.remove("active");
-    }
-    steps[targetStepId].classList.add("active");
+    document
+      .querySelectorAll(".step")
+      .forEach((s) => s.classList.remove("active"));
+    document.getElementById(targetStepId).classList.add("active");
+    window.scrollTo(0, 0);
   }
 
-  // --- Step 1: Welcome Screen Interactions ---
+  // --- Step 1 ---
   startButton.addEventListener("click", () => {
     transitionToStep("step2");
-    // Autoplay music (often requires user interaction first)
-    backgroundMusic.play().catch((error) => {
-      console.log("Autoplay prevented:", error);
-      // Optionally, show a play button if autoplay fails
-    });
+    backgroundMusic.play().catch(() => console.log("Music muted by browser"));
   });
 
-  // --- Step 2: Envelope Interactions ---
-  envelopeContainer.addEventListener("click", () => {
-    envelopeContainer.classList.add("open");
-    envelopeContainer.querySelector(".click-instruction").style.opacity = "0"; // Hide instruction
+  // --- Step 2 ---
+ envelopeContainer.addEventListener("click", () => {
+  // 1. Add 'open' class to trigger CSS animations (Flap and Letter Slide)
+  envelopeContainer.classList.add("open");
+  
+  // 2. Hide the click instruction immediately
+  const instruction = envelopeContainer.querySelector(".click-instruction");
+  if(instruction) instruction.style.opacity = "0";
+
+  // 3. WAIT for the letter to finish sliding up (approx 1.2 seconds)
+  // then transition to the full letter view (Step 3)
+  setTimeout(() => {
+    transitionToStep("step3");
+    
+    // Add the 'show' class to Step 3 for its own fade-in animation
     setTimeout(() => {
-      transitionToStep("step3");
-      setTimeout(() => {
-        document.getElementById("letterContainer").classList.add("show");
-      }, 100); // Small delay for letter reveal animation
-    }, 700); // Duration matches envelope flap animation
-  });
+      document.getElementById("letterContainer").classList.add("show");
+    }, 100);
+    
+  }, 1200); // Increased delay to allow her to see the letter slide out
+});
 
-  // --- Step 3: Letter Unfold Interactions ---
+  // --- Step 3 ---
   unfoldButton.addEventListener("click", () => {
     transitionToStep("step4");
-    startCelebrationAnimations();
+    startCelebration();
+    createDecorations();
   });
 
-  // --- Step 4: Grand Celebration Animations ---
-  function startCelebrationAnimations() {
-    // --- Typewriter Effect for Main Greeting ---
+  // --- Step 4 Animations ---
+  function startCelebration() {
+    // 1. Typewriter Effect
     let i = 0;
-    finalGreetingElement.textContent = ""; // Clear content
-    finalGreetingElement.style.borderRight = "3px solid var(--accent-yellow)"; // Ensure cursor is visible
-
-    const typingInterval = setInterval(() => {
+    finalGreetingElement.textContent = "";
+    const typeWriter = setInterval(() => {
       if (i < messageGreeting.length) {
         finalGreetingElement.textContent += messageGreeting.charAt(i);
         i++;
       } else {
-        clearInterval(typingInterval);
-        finalGreetingElement.classList.add("typed"); // Add class to manage cursor animation after typing
+        clearInterval(typeWriter);
+        finalGreetingElement.classList.add("typed");
       }
-    }, 100); // Typing speed
+    }, 100);
 
-    // --- Confetti Cannon Effect ---
-    createConfettiCannon(100, 0.5); // Count, delay
-    setTimeout(() => createConfettiCannon(80, 0.3), 500); // Second burst
-    setTimeout(() => createConfettiCannon(60, 0.2), 1000); // Third burst
+    // 2. Image Slider
+    let currentImg = 0;
+    const imgEl = document.getElementById("memoryImage");
+    setInterval(() => {
+      currentImg = (currentImg + 1) % images.length;
+      imgEl.style.opacity = 0;
+      setTimeout(() => {
+        imgEl.src = images[currentImg];
+        imgEl.style.opacity = 1;
+      }, 500);
+    }, 3000);
 
-    // --- Rising Balloons ---
-    createBalloons(15);
-
-    // --- Background Fireworks (Subtle) ---
-    createFireworks(5); // Number of firework bursts
+    // 3. Effects
+    createConfetti();
+    createBalloons();
   }
-
-  // --- Confetti Cannon Helper ---
-  function createConfettiCannon(count, delayMultiplier) {
-    const confettiCannonContainer = document.querySelector(
-      ".confetti-cannon-container",
-    );
-    const colors = [
-      "var(--primary-red)",
-      "var(--accent-yellow)",
-      "var(--text-light)",
-      "#00d8d6",
-      "#8e44ad",
-    ]; // Use CSS variables
-
-    for (let i = 0; i < count; i++) {
-      const confetti = document.createElement("div");
-      confetti.classList.add("confetti");
-
-      confetti.style.backgroundColor =
+  function startImageLoop() {
+    const images = ["img1.jpg", "img2.jpg", "img3.jpg", "img4.jpg"];
+    let current = 0;
+    const imageElement = document.getElementById("memoryImage");
+    setInterval(() => {
+      current = (current + 1) % images.length;
+      imageElement.src = images[current];
+    }, 2500);
+  }
+  function createConfetti() {
+    const colors = ["#ff85a2", "#f75c7e", "#f4d03f", "#ffffff"];
+    for (let i = 0; i < 100; i++) {
+      const div = document.createElement("div");
+      div.className = "confetti";
+      div.style.left = Math.random() * 100 + "vw";
+      div.style.top = "-10px";
+      div.style.backgroundColor =
         colors[Math.floor(Math.random() * colors.length)];
-      confetti.style.left = `${Math.random() * 100}vw`; // Random start X
-      confetti.style.top = `${Math.random() * 20 - 10}vh`; // Slightly above/below top of screen
-
-      // Randomize duration and delay
-      const duration = Math.random() * 2 + 3; // 3-5 seconds
-      const delay = Math.random() * delayMultiplier;
-      confetti.style.animationDuration = `${duration}s`;
-      confetti.style.animationDelay = `${delay}s`;
-
-      // Randomize size and shape
-      const size = Math.random() * 8 + 4; // 4-12px
-      confetti.style.width = `${size}px`;
-      confetti.style.height = `${size}px`;
-      if (Math.random() > 0.5) confetti.style.borderRadius = "50%"; // Make some circular
-
-      // Randomize initial rotation for confetti
-      confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
-
-      confettiCannonContainer.appendChild(confetti);
-
-      // Remove after animation to prevent DOM bloat
-      confetti.addEventListener("animationend", () => confetti.remove());
+      div.style.width = Math.random() * 10 + 5 + "px";
+      div.style.height = div.style.width;
+      div.style.animation = `fall ${Math.random() * 3 + 2}s linear forwards`;
+      document.body.appendChild(div);
+      setTimeout(() => div.remove(), 5000);
     }
   }
+  function createDecorations() {
+    const layer = document.getElementById("decorationLayer");
 
-  // --- Balloons Helper ---
-  function createBalloons(count) {
-    const balloonsContainer = document.querySelector(".balloons-container");
+    // Create 30 random sparkles
+    for (let i = 0; i < 30; i++) {
+      setTimeout(() => {
+        const sparkle = document.createElement("div");
+        sparkle.className = "sparkle";
+        sparkle.style.left = Math.random() * 100 + "vw";
+        sparkle.style.top = Math.random() * 100 + "vh";
+        const size = Math.random() * 5 + 3 + "px";
+        sparkle.style.width = size;
+        sparkle.style.height = size;
+        sparkle.style.animationDelay = Math.random() * 2 + "s";
+        layer.appendChild(sparkle);
+      }, i * 100);
+    }
+
+    // Continuously create floating hearts
+    setInterval(() => {
+      const heart = document.createElement("div");
+      heart.className = "floating-heart";
+      heart.innerHTML = "❤️";
+      heart.style.left = Math.random() * 100 + "vw";
+      heart.style.fontSize = Math.random() * 20 + 10 + "px";
+      heart.style.animationDuration = Math.random() * 3 + 4 + "s";
+      layer.appendChild(heart);
+
+      // Remove from DOM after animation
+      setTimeout(() => heart.remove(), 6000);
+    }, 800);
+  }
+  function createBalloons() {
     const colors = [
-      "var(--primary-red)",
-      "var(--accent-yellow)",
-      "#00d8d6",
-      "#8e44ad",
-      "#3498db",
+      "rgba(255, 133, 162, 0.7)",
+      "rgba(244, 208, 63, 0.7)",
+      "rgba(247, 92, 126, 0.7)",
     ];
-
-    for (let i = 0; i < count; i++) {
+    for (let i = 0; i < 15; i++) {
       const balloon = document.createElement("div");
-      balloon.classList.add("balloon");
-
-      balloon.style.left = `${Math.random() * 80 + 10}vw`; // Avoid edges
+      balloon.className = "balloon";
+      balloon.style.left = Math.random() * 90 + "vw";
       balloon.style.backgroundColor =
         colors[Math.floor(Math.random() * colors.length)];
-      balloon.style.animationDuration = `${Math.random() * 6 + 10}s`; // 10-16s duration
-      balloon.style.animationDelay = `${Math.random() * 5}s`; // Staggered start
-
-      balloonsContainer.appendChild(balloon);
-
-      // Remove after animation
-      balloon.addEventListener("animationend", () => balloon.remove());
-    }
-  }
-
-  // --- Fireworks Helper ---
-  function createFireworks(count) {
-    const fireworksContainer = document.querySelector(".fireworks-container");
-    const colors = [
-      "var(--primary-red)",
-      "var(--accent-yellow)",
-      "var(--text-light)",
-      "#00d8d6",
-    ];
-
-    for (let i = 0; i < count; i++) {
-      const firework = document.createElement("div");
-      firework.classList.add("firework");
-
-      firework.style.left = `${Math.random() * 80 + 10}vw`;
-      firework.style.bottom = `${Math.random() * 20}vh`; // Launch from bottom 20%
-      firework.style.backgroundColor =
-        colors[Math.floor(Math.random() * colors.length)];
-      firework.style.boxShadow = `0 0 5px ${firework.style.backgroundColor}`; // Match box shadow to color
-
-      // Stagger animation delay
-      const delay = Math.random() * 3; // 0-3 second delay
-      firework.style.animationDelay = `${delay}s, ${delay + 3}s`; // Launch and then explode
-
-      fireworksContainer.appendChild(firework);
-
-      firework.addEventListener("animationend", () => firework.remove());
+      balloon.style.animation = `rise ${Math.random() * 5 + 5}s ease-in forwards`;
+      balloon.style.animationDelay = Math.random() * 5 + "s";
+      document.body.appendChild(balloon);
+      setTimeout(() => balloon.remove(), 12000);
     }
   }
 });
