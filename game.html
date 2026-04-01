@@ -2,44 +2,73 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Prevents accidental zooming on mobile while playing -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Hsu's Birthday Snack Catch!</title>
-    <!-- Added Google Fonts to match your main page -->
     <link
       href="https://fonts.googleapis.com/css2?family=Pacifico&family=Poppins:wght@400;600&display=swap"
       rel="stylesheet"
     />
 
     <style>
+      /* Smooth scrolling for the whole page */
+      html { scroll-behavior: smooth; }
+
       body {
         margin: 0;
         background-color: #fff5f6;
         display: flex;
         flex-direction: column;
         align-items: center;
-        /* CHANGED: Changed height to min-height and removed overflow:hidden */
         min-height: 100vh;
-        padding: 20px 0; /* Adds space at top and bottom */
+        padding: 20px 10px;
         font-family: "Poppins", sans-serif;
         color: #f75c7e;
-        overflow-y: auto; /* Allows vertical scrolling */
+        /* Standard scroll for page, but we will lock it on the canvas */
+        overflow-x: hidden;
       }
 
+      h1 {
+        font-family: "Pacifico", cursive;
+        margin: 0 0 10px 0;
+        text-align: center;
+        font-size: clamp(1.5rem, 8vw, 2.5rem);
+      }
+
+      .instruction {
+        font-weight: bold;
+        color: #d35400;
+        margin-bottom: 10px;
+        text-align: center;
+      }
+
+      #scoreDisplay {
+        margin: 5px 0 15px 0;
+        background: white;
+        padding: 5px 20px;
+        border-radius: 20px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+      }
+
+      /* THE CANVAS */
       canvas {
         background: linear-gradient(#ff85a2, #fff5f6);
         border: 5px solid white;
         border-radius: 20px;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        cursor: none;
-        /* ADDED: Makes canvas fit on small mobile screens */
-        max-width: 90vw;
+        cursor: crosshair;
+        
+        /* Mobile Fix: Prevents the page from sliding around when you drag your finger */
+        touch-action: none; 
+        
+        /* PC & Mobile: Ensures canvas fits screen but stays a good size */
+        max-width: 100%;
         height: auto;
       }
 
       .btn-back {
-        margin-top: 20px;
-        margin-bottom: 30px; /* Space at the bottom */
-        padding: 12px 25px;
+        margin-top: 30px;
+        padding: 12px 30px;
         background: #ff85a2;
         color: white;
         border: none;
@@ -51,33 +80,23 @@
       }
 
       .btn-back:hover {
-        transform: scale(1.05);
         background: #f75c7e;
+        transform: translateY(-2px);
       }
 
-      h1 {
-        margin-bottom: 5px;
-        text-align: center;
-      }
-      p {
-        margin-bottom: 15px;
-        text-align: center;
+      .btn-back:active {
+        transform: translateY(0);
       }
     </style>
   </head>
   <body>
-    <h1 style="font-family: &quot;Pacifico&quot;, cursive">
-      🍱 Hsu's Snack Attack!
-    </h1>
-    <p style="font-weight: bold; color: #d35400">
-      Don't let her go hungry! Catch the treats! 🍩
-    </p>
+    <h1>🍱 Hsu's Snack Attack!</h1>
+    <p class="instruction">Catch the treats! 🍩</p>
 
     <h2 id="scoreDisplay">Treats Eaten: 0</h2>
 
     <canvas id="gameCanvas"></canvas>
 
-    <!-- Link back to your main index.html -->
     <a href="index.html" class="btn-back">⬅ Back to Celebration</a>
 
     <script>
@@ -85,63 +104,68 @@
       const ctx = canvas.getContext("2d");
       const scoreDisplay = document.getElementById("scoreDisplay");
 
-      // Dynamic sizing for better mobile fit
-      canvas.width = Math.min(window.innerWidth - 40, 400);
+      // INTERNAL RESOLUTION (The "Game World" size)
+      canvas.width = 400;
       canvas.height = 500;
 
       let score = 0;
       const playerImg = new Image();
-      playerImg.src = "your_photo.jpg";
+      playerImg.src = "your_photo.jpg"; 
 
       const player = {
         x: canvas.width / 2 - 35,
-        y: 400,
+        y: canvas.height - 100, // Positioned near bottom
         width: 70,
         height: 70,
       };
 
       const foods = [];
-      const emojis = ["🎂", "🍦", "🍭", "🍓", "🍩", "🌸"];
+      const emojis = ["🎂", "🍦", "🍭", "🍓", "🍩", "🌸", "🍔", "🧁"];
 
-      // MOVE PLAYER LOGIC
-      function movePlayer(clientX) {
-        let rect = canvas.getBoundingClientRect();
+      // CROSS-PLATFORM INPUT LOGIC
+      function handleInput(clientX) {
+        const rect = canvas.getBoundingClientRect();
+        // This math converts the screen tap/click to the 400px canvas internal width
         const scaleX = canvas.width / rect.width;
-        let newX = (clientX - rect.left) * scaleX - player.width / 2;
+        let mouseX = (clientX - rect.left) * scaleX;
+        
+        // Center player on mouse/finger
+        let newX = mouseX - player.width / 2;
 
-        // Keep player inside canvas
+        // Keep inside boundaries
         if (newX < 0) newX = 0;
-        if (newX > canvas.width - player.width)
-          newX = canvas.width - player.width;
+        if (newX > canvas.width - player.width) newX = canvas.width - player.width;
 
         player.x = newX;
       }
 
-      // Mouse Movement
-      window.addEventListener("mousemove", (e) => {
-        movePlayer(e.clientX);
+      // PC: Mouse Movement
+      canvas.addEventListener("mousemove", (e) => {
+        handleInput(e.clientX);
       });
 
-      // TOUCH CONTROL - Fixed to allow scrolling
-      canvas.addEventListener(
-        "touchmove",
-        (e) => {
-          const touch = e.touches[0];
-          movePlayer(touch.clientX);
+      // MOBILE: Touch Movement
+      canvas.addEventListener("touchmove", (e) => {
+        handleInput(e.touches[0].clientX);
+        e.preventDefault(); // Stop page scrolling
+      }, { passive: false });
 
-          // Prevent scrolling ONLY when touching the canvas
-          if (e.target === canvas) {
-            e.preventDefault();
-          }
-        },
-        { passive: false },
-      );
+      canvas.addEventListener("touchstart", (e) => {
+        handleInput(e.touches[0].clientX);
+        e.preventDefault();
+      }, { passive: false });
+
 
       function spawnFood() {
-        const x = Math.random() * (canvas.width - 30);
+        const x = Math.random() * (canvas.width - 40) + 20;
         const emoji = emojis[Math.floor(Math.random() * emojis.length)];
-        foods.push({ x, y: -50, speed: 3 + Math.random() * 2, emoji });
-        setTimeout(spawnFood, 800);
+        // Speed gets slightly faster as score increases
+        const speed = 3 + Math.random() * 2 + (score * 0.05);
+        foods.push({ x, y: -50, speed, emoji });
+        
+        // Spawn faster over time
+        let nextSpawn = Math.max(300, 1000 - (score * 5));
+        setTimeout(spawnFood, nextSpawn);
       }
 
       function drawPlayer() {
@@ -152,52 +176,59 @@
         ctx.arc(centerX, centerY, player.width / 2, 0, Math.PI * 2);
         ctx.clip();
 
+        // Background for the photo circle
         ctx.fillStyle = "#ff85a2";
         ctx.fill();
 
-        if (playerImg.complete) {
-          ctx.drawImage(
-            playerImg,
-            player.x,
-            player.y,
-            player.width,
-            player.height,
-          );
+        if (playerImg.complete && playerImg.naturalWidth !== 0) {
+          ctx.drawImage(playerImg, player.x, player.y, player.width, player.height);
+        } else {
+          // Fallback if image isn't found
+          ctx.fillStyle = "white";
+          ctx.font = "bold 30px Arial";
+          ctx.textAlign = "center";
+          ctx.fillText("Hsu", centerX, centerY + 10);
         }
+        
         ctx.restore();
 
+        // White border around character
         ctx.beginPath();
         ctx.arc(centerX, centerY, player.width / 2, 0, Math.PI * 2);
         ctx.strokeStyle = "white";
-        ctx.lineWidth = 3;
+        ctx.lineWidth = 4;
         ctx.stroke();
       }
 
       function update() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
         drawPlayer();
 
         for (let i = 0; i < foods.length; i++) {
           let f = foods[i];
           f.y += f.speed;
 
-          ctx.font = "35px Arial";
+          // Draw Treat
+          ctx.font = "40px Arial";
+          ctx.textAlign = "center";
           ctx.fillText(f.emoji, f.x, f.y);
 
-          // Collision logic
-          if (
-            f.y > player.y &&
-            f.y < player.y + player.height &&
-            f.x > player.x - 20 &&
-            f.x < player.x + player.width
-          ) {
+          // COLLISION DETECTION
+          // We check the distance between the food center and the player center
+          let pCenterX = player.x + player.width / 2;
+          let pCenterY = player.y + player.height / 2;
+          
+          let dist = Math.hypot(f.x - pCenterX, (f.y - 15) - pCenterY);
+
+          if (dist < 45) { // Collision hit!
             foods.splice(i, 1);
             score++;
             scoreDisplay.innerText = "Treats Eaten: " + score;
             i--;
-          }
-
-          if (f.y > canvas.height) {
+          } 
+          // Remove if off screen
+          else if (f.y > canvas.height + 50) {
             foods.splice(i, 1);
             i--;
           }
@@ -205,7 +236,7 @@
         requestAnimationFrame(update);
       }
 
-      // Start Game
+      // Start the game loop
       spawnFood();
       update();
     </script>
