@@ -23,26 +23,25 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // --- Step 2 ---
- envelopeContainer.addEventListener("click", () => {
-  // 1. Add 'open' class to trigger CSS animations (Flap and Letter Slide)
-  envelopeContainer.classList.add("open");
-  
-  // 2. Hide the click instruction immediately
-  const instruction = envelopeContainer.querySelector(".click-instruction");
-  if(instruction) instruction.style.opacity = "0";
+  envelopeContainer.addEventListener("click", () => {
+    // 1. Add 'open' class to trigger CSS animations (Flap and Letter Slide)
+    envelopeContainer.classList.add("open");
 
-  // 3. WAIT for the letter to finish sliding up (approx 1.2 seconds)
-  // then transition to the full letter view (Step 3)
-  setTimeout(() => {
-    transitionToStep("step3");
-    
-    // Add the 'show' class to Step 3 for its own fade-in animation
+    // 2. Hide the click instruction immediately
+    const instruction = envelopeContainer.querySelector(".click-instruction");
+    if (instruction) instruction.style.opacity = "0";
+
+    // 3. WAIT for the letter to finish sliding up (approx 1.2 seconds)
+    // then transition to the full letter view (Step 3)
     setTimeout(() => {
-      document.getElementById("letterContainer").classList.add("show");
-    }, 100);
-    
-  }, 1200); // Increased delay to allow her to see the letter slide out
-});
+      transitionToStep("step3");
+
+      // Add the 'show' class to Step 3 for its own fade-in animation
+      setTimeout(() => {
+        document.getElementById("letterContainer").classList.add("show");
+      }, 100);
+    }, 1200); // Increased delay to allow her to see the letter slide out
+  });
 
   // --- Step 3 ---
   unfoldButton.addEventListener("click", () => {
@@ -157,4 +156,8 @@ document.addEventListener("DOMContentLoaded", () => {
       setTimeout(() => balloon.remove(), 12000);
     }
   }
+});
+document.getElementById("playGameButton").addEventListener("click", () => {
+  // This will take her to the game page
+  window.location.href = "game.html";
 });

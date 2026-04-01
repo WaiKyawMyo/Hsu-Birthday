@@ -604,3 +604,114 @@ body {
     transform: scale(0.8);
   }
 }
+.feed-section {
+  margin-top: 40px;
+  padding-bottom: 50px;
+}
+.feed-container {
+  margin: 50px 0;
+  display: flex;
+  justify-content: center;
+}
+
+.snack-button {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background: linear-gradient(135deg, #ff85a2 0%, #f75c7e 100%);
+  border: 5px solid #fff; /* Sticker border */
+  border-radius: 80px;
+  padding: 15px 40px;
+  color: white;
+  cursor: pointer;
+  box-shadow: 0 15px 30px rgba(247, 92, 126, 0.4);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  animation: floatButton 3s ease-in-out infinite;
+  text-align: left;
+}
+
+.snack-button:hover {
+  transform: scale(1.1) translateY(-5px);
+  box-shadow: 0 20px 40px rgba(247, 92, 126, 0.6);
+  background: linear-gradient(135deg, #f75c7e 0%, #ff85a2 100%);
+}
+
+.btn-icon {
+  font-size: 2.5rem;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 10px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.top-text {
+  font-family: "Poppins", sans-serif;
+  font-weight: 800;
+  font-size: 1.2rem;
+  letter-spacing: 1px;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.bottom-text {
+  font-size: 0.85rem;
+  opacity: 0.9;
+  font-weight: 400;
+  font-style: italic;
+}
+
+/* Floating Animation */
+@keyframes floatButton {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+/* Mobile Responsive */
+@media (max-width: 480px) {
+  .snack-button {
+    padding: 12px 25px;
+    gap: 12px;
+  }
+  .top-text {
+    font-size: 1rem;
+  }
+  .btn-icon {
+    font-size: 1.8rem;
+  }
+}
+
+.hungry-btn {
+  background: linear-gradient(135deg, #f4d03f, #e67e22) !important;
+  animation: wiggle 0.5s infinite;
+}
+
+@keyframes wiggle {
+  0% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(3deg);
+  }
+  50% {
+    transform: rotate(0deg);
+  }
+  75% {
+    transform: rotate(-3deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}

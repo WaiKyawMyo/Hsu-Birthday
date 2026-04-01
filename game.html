@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hsu's Birthday Snack Catch!</title>
+    <!-- Added Google Fonts to match your main page -->
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            margin: 0;
+            background-color: #fff5f6;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            /* CHANGED: Changed height to min-height and removed overflow:hidden */
+            min-height: 100vh; 
+            padding: 20px 0; /* Adds space at top and bottom */
+            font-family: 'Poppins', sans-serif;
+            color: #f75c7e;
+            overflow-y: auto; /* Allows vertical scrolling */
+        }
+
+        canvas {
+            background: linear-gradient(#ff85a2, #fff5f6);
+            border: 5px solid white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            cursor: none;
+            /* ADDED: Makes canvas fit on small mobile screens */
+            max-width: 90vw; 
+            height: auto;
+        }
+
+        .btn-back {
+            margin-top: 20px;
+            margin-bottom: 30px; /* Space at the bottom */
+            padding: 12px 25px;
+            background: #ff85a2;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(247, 92, 126, 0.3);
+            transition: 0.3s;
+        }
+
+        .btn-back:hover {
+            transform: scale(1.05);
+            background: #f75c7e;
+        }
+
+        h1 { margin-bottom: 5px; text-align: center; }
+        p { margin-bottom: 15px; text-align: center; }
+    </style>
+</head>
+<body>
+
+    <h1 style="font-family: 'Pacifico', cursive;">🍱 Hsu's Snack Attack!</h1>
+    <p style="font-weight: bold; color: #d35400;">Don't let her go hungry! Catch the treats! 🍩</p>
+    
+    <h2 id="scoreDisplay">Treats Eaten: 0</h2>
+    
+    <canvas id="gameCanvas"></canvas>
+    
+    <!-- Link back to your main index.html -->
+    <a href="index.html" class="btn-back">⬅ Back to Celebration</a>
+
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        const scoreDisplay = document.getElementById("scoreDisplay");
+
+        canvas.width = 400;
+        canvas.height = 500;
+
+        let score = 0;
+        const playerImg = new Image();
+        // ENSURE THIS IMAGE NAME IS CORRECT
+        playerImg.src = "your_photo.jpg"; 
+
+        const player = {
+            x: 175,
+            y: 400,
+            width: 70,
+            height: 70
+        };
+
+        const foods = [];
+        const emojis = ["🎂", "🍦", "🍭", "🍓", "🍩", "🌸"];
+
+        // Support for both Mouse and Touch
+        function movePlayer(e) {
+            let rect = canvas.getBoundingClientRect();
+            let clientX = e.clientX || (e.touches && e.touches[0].clientX);
+            if (clientX) {
+                // Adjusting for the responsive scale of the canvas
+                const scaleX = canvas.width / rect.width; 
+                player.x = (clientX - rect.left) * scaleX - player.width / 2;
+            }
+        }
+
+        window.addEventListener("mousemove", movePlayer);
+        window.addEventListener("touchmove", (e) => {
+            movePlayer(e);
+            e.preventDefault(); // Prevents screen wobbling while playing
+        }, { passive: false });
+
+        function spawnFood() {
+            const x = Math.random() * (canvas.width - 30);
+            const emoji = emojis[Math.floor(Math.random() * emojis.length)];
+            foods.push({ x, y: -50, speed: 3 + Math.random() * 2, emoji });
+            setTimeout(spawnFood, 800);
+        }
+
+        function drawPlayer() {
+            ctx.save();
+            ctx.beginPath();
+            let centerX = player.x + player.width / 2;
+            let centerY = player.y + player.height / 2;
+            ctx.arc(centerX, centerY, player.width / 2, 0, Math.PI * 2);
+            ctx.clip();
+            // Fallback: If image fails to load, draw a pink circle
+            ctx.fillStyle = "#ff85a2";
+            ctx.fill();
+            ctx.drawImage(playerImg, player.x, player.y, player.width, player.height);
+            ctx.restore();
+            
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, player.width / 2, 0, Math.PI * 2);
+            ctx.strokeStyle = "white";
+            ctx.lineWidth = 3;
+            ctx.stroke();
+        }
+
+        function update() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawPlayer();
+
+            for (let i = 0; i < foods.length; i++) {
+                let f = foods[i];
+                f.y += f.speed;
+
+                ctx.font = "35px Arial";
+                ctx.fillText(f.emoji, f.x, f.y);
+
+                if (f.y > player.y && f.x > player.x - 20 && f.x < player.x + player.width) {
+                    foods.splice(i, 1);
+                    score++;
+                    scoreDisplay.innerText = "Treats Eaten: " + score;
+                    i--;
+                }
+
+                if (f.y > canvas.height) {
+                    foods.splice(i, 1);
+                    i--;
+                }
+            }
+            requestAnimationFrame(update);
+        }
+
+        playerImg.onload = () => {
+            spawnFood();
+            update();
+        };
+
+        // If image takes too long to load, start anyway
+        setTimeout(() => { if(foods.length === 0) { spawnFood(); update(); } }, 1000);
+    </script>
+</body>
+</html>
