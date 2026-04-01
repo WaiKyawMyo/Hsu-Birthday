@@ -337,6 +337,7 @@ body {
   font-family: "Playfair Display", serif;
   font-size: 3rem;
   margin: 10px 0;
+  line-height: 1.2; /* Add space between wrapped lines */
 }
 
 .recipient-name {
@@ -472,7 +473,17 @@ body {
   animation: heartFloat 5s linear forwards;
   z-index: 10;
 }
-
+@media (max-width: 480px) {
+  .main-greeting {
+    font-size: 2rem; /* Smaller font for mobile */
+  }
+  .recipient-name {
+    font-size: 2.2rem;
+  }
+  .typewriter-text {
+    white-space: normal; /* Ensures it wraps on tiny screens */
+  }
+}
 @keyframes heartFloat {
   0% {
     transform: translateY(100vh) scale(0.5);
@@ -586,8 +597,9 @@ body {
 /* Typewriter Cursor */
 .typewriter-text {
   border-right: 3px solid var(--dark-pink);
-  white-space: nowrap;
+  /* Remove white-space: nowrap; to allow text to wrap */
   overflow: hidden;
+  display: inline-block; /* Helps with the cursor positioning */
 }
 .typed {
   border-right: none;
